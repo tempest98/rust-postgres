@@ -324,7 +324,7 @@ pub fn varbit_from_sql(mut buf: &[u8]) -> Result<Varbit<'_>, StdBox<dyn Error + 
     if len < 0 {
         return Err("invalid varbit length: varbit < 0".into());
     }
-    let bytes = (len as usize + 7) / 8;
+    let bytes = (len as usize).div_ceil(8);
     if buf.len() != bytes {
         return Err("invalid message length: varbit mismatch".into());
     }
@@ -582,7 +582,7 @@ impl<'a> Array<'a> {
 /// An iterator over the dimensions of an array.
 pub struct ArrayDimensions<'a>(&'a [u8]);
 
-impl<'a> FallibleIterator for ArrayDimensions<'a> {
+impl FallibleIterator for ArrayDimensions<'_> {
     type Item = ArrayDimension;
     type Error = StdBox<dyn Error + Sync + Send>;
 
@@ -950,7 +950,7 @@ pub struct PathPoints<'a> {
     buf: &'a [u8],
 }
 
-impl<'a> FallibleIterator for PathPoints<'a> {
+impl FallibleIterator for PathPoints<'_> {
     type Item = Point;
     type Error = StdBox<dyn Error + Sync + Send>;
 

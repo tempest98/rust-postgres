@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+## v0.7.13 - 2025-02-02
+
+### Added
+
+* Added support for direct TLS negotiation.
+* Added support for `cidr` 0.3 via the `with-cidr-0_3` feature.
+
+### Fixes
+
+* Added `load_balance_hosts` to `Config`'s `Debug` implementation.
+
+### Changes
+
+* Upgraded `rand`.
+
+## v0.7.12 - 2024-09-15
+
+### Fixed
+
+* Fixed `query_typed` queries that return no rows.
+
+### Added
+
+* Added support for `jiff` 0.1 via the `with-jiff-01` feature.
+* Added support for TCP keepalive on AIX.
+
 ## v0.7.11 - 2024-07-21
 
 ### Fixed

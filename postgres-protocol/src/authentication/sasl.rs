@@ -136,10 +136,10 @@ impl ScramSha256 {
     /// Constructs a new instance which will use the provided password for authentication.
     pub fn new(password: &[u8], channel_binding: ChannelBinding) -> ScramSha256 {
         // rand 0.5's ThreadRng is cryptographically secure
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let nonce = (0..NONCE_LENGTH)
             .map(|_| {
-                let mut v = rng.gen_range(0x21u8..0x7e);
+                let mut v = rng.random_range(0x21u8..0x7e);
                 if v == 0x2c {
                     v = 0x7e
                 }
@@ -180,7 +180,7 @@ impl ScramSha256 {
                     password,
                     channel_binding,
                 } => (nonce, password, channel_binding),
-                _ => return Err(io::Error::new(io::ErrorKind::Other, "invalid SCRAM state")),
+                _ => return Err(io::Error::other("invalid SCRAM state")),
             };
 
         let message =
@@ -252,7 +252,7 @@ impl ScramSha256 {
                 salted_password,
                 auth_message,
             } => (salted_password, auth_message),
-            _ => return Err(io::Error::new(io::ErrorKind::Other, "invalid SCRAM state")),
+            _ => return Err(io::Error::other("invalid SCRAM state")),
         };
 
         let message =
@@ -262,10 +262,7 @@ impl ScramSha256 {
 
         let verifier = match parsed {
             ServerFinalMessage::Error(e) => {
-                return Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    format!("SCRAM error: {}", e),
-                ));
+                return Err(io::Error::other(format!("SCRAM error: {}", e)));
             }
             ServerFinalMessage::Verifier(verifier) => verifier,
         };
