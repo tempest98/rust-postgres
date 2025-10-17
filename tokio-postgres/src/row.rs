@@ -272,4 +272,12 @@ impl SimpleQueryRow {
         let buf = self.ranges[idx].clone().map(|r| &self.body.buffer()[r]);
         FromSql::from_sql_nullable(&Type::TEXT, buf).map_err(|e| Error::from_sql(e, idx))
     }
+
+    /// Returns the raw buffer bytes from the DataRow message.
+    ///
+    /// This provides direct access to the wire protocol bytes received from PostgreSQL,
+    /// allowing efficient forwarding without decode/encode cycles.
+    pub fn raw_buffer_bytes(&self) -> &bytes::Bytes {
+        self.body.buffer_bytes()
+    }
 }
