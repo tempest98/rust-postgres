@@ -189,6 +189,14 @@ impl Row {
         let range = self.ranges[idx].to_owned()?;
         Some(&self.body.buffer()[range])
     }
+
+    /// Returns the raw buffer bytes from the DataRow message.
+    ///
+    /// This provides direct access to the wire protocol bytes received from PostgreSQL,
+    /// allowing efficient forwarding without decode/encode cycles.
+    pub fn raw_buffer_bytes(&self) -> &bytes::Bytes {
+        self.body.buffer_bytes()
+    }
 }
 
 impl AsName for SimpleColumn {
