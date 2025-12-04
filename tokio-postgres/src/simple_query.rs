@@ -19,16 +19,48 @@ use std::task::{Context, Poll};
 #[derive(Debug)]
 pub struct SimpleColumn {
     name: String,
+    type_oid: u32,
+    type_size: i16,
+    type_modifier: i32,
 }
 
 impl SimpleColumn {
-    pub(crate) fn new(name: String) -> SimpleColumn {
-        SimpleColumn { name }
+    pub(crate) fn new(
+        name: String,
+        type_oid: u32,
+        type_size: i16,
+        type_modifier: i32,
+    ) -> SimpleColumn {
+        SimpleColumn {
+            name,
+            type_oid,
+            type_size,
+            type_modifier,
+        }
     }
 
     /// Returns the name of the column.
+    #[inline]
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    /// Returns the type oid of the column.
+    #[inline]
+    pub fn type_oid(&self) -> u32 {
+        self.type_oid
+    }
+
+    /// Returns the type size of the column.
+    #[inline]
+    pub fn type_size(&self) -> i16 {
+        self.type_size
+    }
+
+    /// Returns the type modifier of the column.
+    #[inline]
+    pub fn type_modifier(&self) -> i32 {
+        self.type_modifier
     }
 }
 
@@ -96,7 +128,14 @@ impl Stream for SimpleQueryStream {
             Message::RowDescription(body) => {
                 let columns: Arc<[SimpleColumn]> = body
                     .fields()
-                    .map(|f| Ok(SimpleColumn::new(f.name().to_string())))
+                    .map(|f| {
+                        Ok(SimpleColumn::new(
+                            f.name().to_string(),
+                            f.type_oid(),
+                            f.type_size(),
+                            f.type_modifier(),
+                        ))
+                    })
                     .collect::<Vec<_>>()
                     .map_err(Error::parse)?
                     .into();
