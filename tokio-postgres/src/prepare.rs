@@ -131,7 +131,14 @@ fn encode(client: &InnerClient, name: &str, query: &str, types: &[Type]) -> Resu
     })
 }
 
-pub(crate) async fn get_type(client: &Arc<InnerClient>, oid: Oid) -> Result<Type, Error> {
+/// Resolves a PostgreSQL type by its OID.
+///
+/// For built-in types, returns immediately from the static type registry.
+/// For custom types (domains, enums, composites, arrays), queries the database
+/// catalog (`pg_type`, `pg_enum`, `pg_attribute`) and caches the result.
+///
+/// This function is also available as [`Client::get_type`] for convenience.
+pub async fn get_type(client: &Arc<InnerClient>, oid: Oid) -> Result<Type, Error> {
     if let Some(type_) = Type::from_oid(oid) {
         return Ok(type_);
     }

@@ -282,6 +282,26 @@ impl Client {
         prepare::prepare(&self.inner, query, parameter_types).await
     }
 
+    /// Resolves a PostgreSQL type by its OID.
+    ///
+    /// For built-in types, returns immediately from the static type registry.
+    /// For custom types (domains, enums, composites, arrays), queries the database
+    /// catalog and caches the result.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # async fn example(client: &tokio_postgres::Client) -> Result<(), tokio_postgres::Error> {
+    /// // Look up a custom domain type
+    /// let year_type = client.get_type(26720).await?;
+    /// println!("Type name: {}", year_type.name());
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn get_type(&self, oid: Oid) -> Result<Type, Error> {
+        prepare::get_type(&self.inner, oid).await
+    }
+
     /// Executes a statement, returning a vector of the resulting rows.
     ///
     /// A statement may contain parameters, specified by `$n`, where `n` is the index of the parameter of the list
@@ -580,7 +600,8 @@ impl Client {
         self.simple_query_raw(query).await?.try_collect().await
     }
 
-    pub(crate) async fn simple_query_raw(&self, query: &str) -> Result<SimpleQueryStream, Error> {
+    /// Like `simple_query`, but returns a `SimpleQueryStream` instead of collecting results.
+    pub async fn simple_query_raw(&self, query: &str) -> Result<SimpleQueryStream, Error> {
         simple_query::simple_query(self.inner(), query).await
     }
 
