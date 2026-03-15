@@ -98,7 +98,7 @@ use tokio_postgres::{Error, Socket};
 /// ```
 ///
 /// ```not_rust
-/// host=/var/lib/postgresql,localhost port=1234 user=postgres password='password with spaces'
+/// host=/var/run/postgresql,localhost port=1234 user=postgres password='password with spaces'
 /// ```
 ///
 /// ```not_rust
@@ -123,7 +123,7 @@ use tokio_postgres::{Error, Socket};
 /// ```
 ///
 /// ```not_rust
-/// postgresql://user:password@%2Fvar%2Flib%2Fpostgresql/mydb?connect_timeout=10
+/// postgresql://user:password@%2Fvar%2Frun%2Fpostgresql/mydb?connect_timeout=10
 /// ```
 ///
 /// ```not_rust
@@ -131,7 +131,7 @@ use tokio_postgres::{Error, Socket};
 /// ```
 ///
 /// ```not_rust
-/// postgresql:///mydb?user=user&host=/var/lib/postgresql
+/// postgresql:///mydb?user=user&host=/var/run/postgresql
 /// ```
 #[derive(Clone)]
 pub struct Config {
