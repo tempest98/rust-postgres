@@ -26,6 +26,7 @@ const TUPLE_OLD_TAG: u8 = b'O';
 const TUPLE_DATA_NULL_TAG: u8 = b'n';
 const TUPLE_DATA_TOAST_TAG: u8 = b'u';
 const TUPLE_DATA_TEXT_TAG: u8 = b't';
+const TUPLE_DATA_BINARY_TAG: u8 = b'b';
 
 // replica identity tags
 const REPLICA_IDENTITY_DEFAULT_TAG: u8 = b'd';
@@ -428,6 +429,8 @@ pub enum TupleData {
     UnchangedToast,
     /// Column data as text formatted value.
     Text(Bytes),
+    /// Column data as binary formatted value.
+    Binary(Bytes),
 }
 
 impl TupleData {
@@ -439,9 +442,14 @@ impl TupleData {
             TUPLE_DATA_TOAST_TAG => TupleData::UnchangedToast,
             TUPLE_DATA_TEXT_TAG => {
                 let len = buf.read_i32::<BigEndian>()?;
+                let data = buf.read_buf(len as usize)?;
+                TupleData::Text(data)
+            }
+            TUPLE_DATA_BINARY_TAG => {
+                let len = buf.read_i32::<BigEndian>()?;
                 let mut data = vec![0; len as usize];
                 buf.read_exact(&mut data)?;
-                TupleData::Text(data.into())
+                TupleData::Binary(data.into())
             }
             tag => {
                 return Err(io::Error::new(
@@ -768,6 +776,20 @@ impl Buffer {
         let buf = self.bytes.slice(self.idx..);
         self.idx = self.bytes.len();
         buf
+    }
+
+    #[inline]
+    fn read_buf(&mut self, len: usize) -> io::Result<Bytes> {
+        if self.idx + len <= self.bytes.len() {
+            let buf = self.bytes.slice(self.idx..(self.idx + len));
+            self.idx += len;
+            Ok(buf)
+        } else {
+            Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "unexpected EOF",
+            ))
+        }
     }
 }
 
