@@ -7,28 +7,14 @@ use crate::{Column, Error, Portal, Row, Statement};
 use bytes::{Bytes, BytesMut};
 use fallible_iterator::FallibleIterator;
 use futures_util::Stream;
-use log::{debug, log_enabled, Level};
+use log::trace;
 use pin_project_lite::pin_project;
 use postgres_protocol::message::backend::{CommandCompleteBody, Message};
 use postgres_protocol::message::frontend;
 use postgres_types::Type;
-use std::fmt;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{ready, Context, Poll};
-
-struct BorrowToSqlParamsDebug<'a, T>(&'a [T]);
-
-impl<T> fmt::Debug for BorrowToSqlParamsDebug<'_, T>
-where
-    T: BorrowToSql,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_list()
-            .entries(self.0.iter().map(|x| x.borrow_to_sql()))
-            .finish()
-    }
-}
 
 pub async fn query<P, I>(
     client: &InnerClient,
@@ -40,17 +26,8 @@ where
     I: IntoIterator<Item = P>,
     I::IntoIter: ExactSizeIterator,
 {
-    let buf = if log_enabled!(Level::Debug) {
-        let params = params.into_iter().collect::<Vec<_>>();
-        debug!(
-            "executing statement {} with parameters: {:?}",
-            statement.name(),
-            BorrowToSqlParamsDebug(params.as_slice()),
-        );
-        encode(client, &statement, params)?
-    } else {
-        encode(client, &statement, params)?
-    };
+    trace!("executing statement {}", statement.name());
+    let buf = encode(client, &statement, params)?;
     let responses = start(client, buf).await?;
     Ok(RowStream {
         statement,
@@ -162,17 +139,8 @@ where
     I: IntoIterator<Item = P>,
     I::IntoIter: ExactSizeIterator,
 {
-    let buf = if log_enabled!(Level::Debug) {
-        let params = params.into_iter().collect::<Vec<_>>();
-        debug!(
-            "executing statement {} with parameters: {:?}",
-            statement.name(),
-            BorrowToSqlParamsDebug(params.as_slice()),
-        );
-        encode(client, &statement, params)?
-    } else {
-        encode(client, &statement, params)?
-    };
+    trace!("executing statement {}", statement.name());
+    let buf = encode(client, &statement, params)?;
     let mut responses = start(client, buf).await?;
 
     let mut rows = 0;

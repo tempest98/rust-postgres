@@ -6,7 +6,7 @@ use crate::{query, simple_query, slice_iter, Error, Statement};
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use futures_channel::mpsc;
 use futures_util::{Sink, SinkExt, Stream, StreamExt};
-use log::debug;
+use log::trace;
 use pin_project_lite::pin_project;
 use postgres_protocol::message::backend::Message;
 use postgres_protocol::message::frontend;
@@ -226,7 +226,7 @@ pub async fn copy_in<T>(client: &InnerClient, statement: Statement) -> Result<Co
 where
     T: Buf + 'static + Send,
 {
-    debug!("executing copy in statement {}", statement.name());
+    trace!("executing copy in statement {}", statement.name());
 
     let buf = query::encode(client, &statement, slice_iter(&[]))?;
     start(client, buf, false).await
@@ -236,7 +236,7 @@ pub async fn copy_in_simple<T>(client: &InnerClient, query: &str) -> Result<Copy
 where
     T: Buf + 'static + Send,
 {
-    debug!("executing copy in query {}", query);
+    trace!("executing copy in query, {} bytes", query.len());
 
     let buf = simple_query::encode(client, query)?;
     start(client, buf, true).await

@@ -4,7 +4,7 @@ use crate::{simple_query, Error};
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use futures_channel::mpsc;
 use futures_util::{ready, Sink, SinkExt, Stream, StreamExt};
-use log::debug;
+use log::trace;
 use pin_project_lite::pin_project;
 use postgres_protocol::message::backend::Message;
 use postgres_protocol::message::frontend;
@@ -344,7 +344,7 @@ pub async fn copy_both_simple<T>(
 where
     T: Buf + 'static + Send,
 {
-    debug!("executing copy both query {}", query);
+    trace!("executing copy both query, {} bytes", query.len());
 
     let buf = simple_query::encode(client, query)?;
 

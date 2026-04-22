@@ -4,14 +4,14 @@ use crate::connection::RequestMessages;
 use crate::{query, simple_query, slice_iter, Error, Statement};
 use bytes::Bytes;
 use futures_util::Stream;
-use log::debug;
+use log::trace;
 use pin_project_lite::pin_project;
 use postgres_protocol::message::backend::Message;
 use std::pin::Pin;
 use std::task::{ready, Context, Poll};
 
 pub async fn copy_out_simple(client: &InnerClient, query: &str) -> Result<CopyOutStream, Error> {
-    debug!("executing copy out query {}", query);
+    trace!("executing copy out query, {} bytes", query.len());
 
     let buf = simple_query::encode(client, query)?;
     let responses = start(client, buf, true).await?;
@@ -19,7 +19,7 @@ pub async fn copy_out_simple(client: &InnerClient, query: &str) -> Result<CopyOu
 }
 
 pub async fn copy_out(client: &InnerClient, statement: Statement) -> Result<CopyOutStream, Error> {
-    debug!("executing copy out statement {}", statement.name());
+    trace!("executing copy out statement {}", statement.name());
 
     let buf = query::encode(client, &statement, slice_iter(&[]))?;
     let responses = start(client, buf, false).await?;
